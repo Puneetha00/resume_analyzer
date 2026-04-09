@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Analyzer - Get Instant Feedback</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📄 Resume Analyzer</h1>
+            <p>Upload your resume (PDF/TXT) to get instant feedback, project suggestions & more!</p>
+        </header>
+
+        <form id="upload-form" class="upload-box" enctype="multipart/form-data">
+            <input type="file" id="resume-file" name="resume" accept=".pdf,.txt" required>
+            <button type="submit" id="analyze-btn">🚀 Analyze Resume</button>
+        </form>
+
+        <div id="loading" class="hidden">⏳ Analyzing your resume...</div>
+        <div id="error" class="hidden error"></div>
+
+        <main id="results" class="hidden">
+            <section class="score-card">
+                <h2>Your Resume Score</h2>
+                <div id="score-value" class="score">0</div>
+                <p id="score-message" style="margin-top: 1rem; color: var(--text-light);"></p>
+            </section>
+
+            <div class="grid">
+                <div class="card">
+                    <h3>🎯 Skills Found</h3>
+                    <div id="skills-container"></div>
+                </div>
+                
+                <div class="card">
+                    <h3>📏 Word Count</h3>
+                    <p id="word-count"></p>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">Ideal: 300-800 words</p>
+                </div>
+                
+                <div class="card">
+                    <h3>📑 Sections Detected</h3>
+                    <ul id="sections-list"></ul>
+                </div>
+
+                <div class="card">
+                    <h3>🏆 Certifications</h3>
+                    <div id="certifications-container"></div>
+                </div>
+            </div>
+
+            <section class="suggestions-card">
+                <h3>💡 Suggestions to Improve</h3>
+                <ul id="suggestions-list"></ul>
+            </section>
+
+            <section class="projects-card">
+                <h3>🚀 Project Ideas Based on Your Skills</h3>
+                <p style="color: var(--text-light); margin-bottom: 1rem;">
+                    Add these projects to your resume to stand out!
+                </p>
+                <ul id="projects-list"></ul>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
