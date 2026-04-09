@@ -6,7 +6,7 @@ import PyPDF2
 
 app = Flask(__name__)
 
-# ✅ Allow Vercel frontend
+# ✅ Allow all origins (Vercel frontend)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf'}
@@ -16,7 +16,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-# 📄 Extract text from file
+# 📄 Extract text
 def extract_text(file, filename):
     ext = filename.rsplit('.', 1)[1].lower()
 
@@ -26,8 +26,8 @@ def extract_text(file, filename):
     elif ext == 'pdf':
         pdf_bytes = io.BytesIO(file.read())
         reader = PyPDF2.PdfReader(pdf_bytes)
-        text = ""
 
+        text = ""
         for page in reader.pages:
             page_text = page.extract_text()
             if page_text:
@@ -39,44 +39,42 @@ def extract_text(file, filename):
 
 
 # 🚀 Project Suggestions
-def suggest_projects(skills_found):
+def suggest_projects(skills):
     suggestions = []
 
-    if 'python' in skills_found:
-        suggestions.append("🐍 Build a REST API using Flask")
-        suggestions.append("🐍 Create an AI Resume Analyzer")
+    if 'python' in skills:
+        suggestions.append("Build a REST API using Flask")
+        suggestions.append("Create an AI-based project")
 
-    if 'javascript' in skills_found:
-        suggestions.append("⚡ Build a dynamic To-Do App")
+    if 'javascript' in skills:
+        suggestions.append("Build an interactive web app")
 
-    if 'react' in skills_found:
-        suggestions.append("⚛️ Build a full-stack MERN project")
+    if 'react' in skills:
+        suggestions.append("Develop a full-stack MERN project")
 
-    if 'sql' in skills_found:
-        suggestions.append("🗄️ Build a Student Database System")
+    if 'sql' in skills:
+        suggestions.append("Build a database-driven system")
 
     if not suggestions:
-        suggestions.append("💡 Start with a portfolio website")
+        suggestions.append("Start with a personal portfolio website")
 
     return suggestions[:5]
 
 
-# 🧠 SMART ANALYSIS
+# 🧠 REAL ANALYSIS FUNCTION
 def analyze_resume(text):
     text_lower = text.lower()
     words = text.split()
     word_count = len(words)
 
-    # 🎯 Skills
-    strong_skills = [
+    # 🎯 Skills detection
+    skills_db = [
         "python", "java", "c++", "javascript", "react",
-        "node", "sql", "mongodb", "flask", "django"
+        "node", "sql", "mongodb", "flask", "django",
+        "machine learning", "data analysis"
     ]
-    basic_skills = ["html", "css"]
 
-    found_strong = [s for s in strong_skills if s in text_lower]
-    found_basic = [s for s in basic_skills if s in text_lower]
-    found_skills = found_strong + found_basic
+    found_skills = list(set([s for s in skills_db if s in text_lower]))
 
     # 📑 Sections
     sections = ["education", "experience", "projects", "skills"]
@@ -89,21 +87,25 @@ def analyze_resume(text):
         if any(c in line.lower() for c in cert_keywords)
     ]
 
-    # 💼 Experience
+    # 💼 Experience detection
     has_experience = "experience" in text_lower or "internship" in text_lower
 
-    # ⚡ Impact words
-    impact_words = ["developed", "built", "created", "designed", "implemented", "optimized"]
-    impact_score = sum(1 for w in impact_words if w in text_lower)
+    # ⚡ Action words (quality)
+    action_words = [
+        "developed", "built", "created", "designed",
+        "implemented", "optimized", "led", "improved"
+    ]
+    action_count = sum(text_lower.count(word) for word in action_words)
 
-    # 🔥 SCORING
+    # 📊 Project depth
+    project_lines = [line for line in text.split("\n") if "project" in line.lower()]
+    project_depth = len(project_lines)
+
+    # 🔥 SCORING (REALISTIC)
     score = 0
 
-    # Strong skills (40)
-    score += min(len(found_strong) * 6, 40)
-
-    # Basic skills (10)
-    score += min(len(found_basic) * 2, 10)
+    # Skills (25)
+    score += min(len(found_skills) * 4, 25)
 
     # Sections (20)
     score += len(found_sections) * 5
@@ -111,51 +113,57 @@ def analyze_resume(text):
     # Word count (10)
     if 400 <= word_count <= 900:
         score += 10
-    elif 250 <= word_count < 400:
+    elif 250 <= word_count < 400 or 900 < word_count <= 1100:
         score += 7
     else:
         score += 4
 
-    # Certifications (10)
-    score += min(len(certifications) * 2, 10)
-
-    # Experience (10)
+    # Experience (15)
     if has_experience:
-        score += 10
+        score += 15
 
-    # Impact words (10)
-    score += min(impact_score * 2, 10)
+    # Projects (15)
+    score += min(project_depth * 3, 15)
 
-    # 🚀 Boost (important for realistic 80–90 scores)
-    if score >= 75:
-        score += 10
-    elif score >= 60:
-        score += 5
+    # Action words (10)
+    score += min(action_count * 2, 10)
 
-    score = min(score, 100)
+    # Certifications (5)
+    score += min(len(certifications), 5)
+
+    # ❌ Penalty: keyword stuffing
+    if len(found_skills) > 8 and action_count < 2:
+        score -= 5
+
+    # ❌ Penalty: very short resume
+    if word_count < 200:
+        score -= 10
+
+    # Clamp score
+    score = max(20, min(score, 100))
 
     # 💡 Suggestions
     suggestions = []
 
-    if len(found_strong) < 3:
-        suggestions.append("📚 Add more strong technical skills")
+    if len(found_skills) < 4:
+        suggestions.append("Add more relevant technical skills with examples")
 
-    if "projects" not in text_lower:
-        suggestions.append("🚀 Add 2–3 solid projects")
+    if project_depth < 2:
+        suggestions.append("Add detailed project descriptions")
+
+    if action_count < 3:
+        suggestions.append("Use strong action verbs like 'Developed', 'Led'")
 
     if not has_experience:
-        suggestions.append("💼 Add internship or real experience")
-
-    if impact_score < 3:
-        suggestions.append("⚡ Use action words like Developed, Built")
+        suggestions.append("Add internship or work experience")
 
     if len(certifications) == 0:
-        suggestions.append("🏆 Add certifications")
+        suggestions.append("Add certifications to strengthen your resume")
 
     if word_count < 300:
-        suggestions.append("📝 Resume is too short")
+        suggestions.append("Resume is too short — add more content")
 
-    # 🚀 Projects
+    # 🚀 Projects suggestion
     project_suggestions = suggest_projects(found_skills)
 
     return {
@@ -175,7 +183,7 @@ def home():
     return "Backend is running!"
 
 
-# 📤 Analyze route
+# 📤 Analyze API
 @app.route('/analyze', methods=['POST'])
 def analyze():
     if 'resume' not in request.files:
@@ -187,13 +195,13 @@ def analyze():
         return jsonify({"error": "No selected file"}), 400
 
     if not allowed_file(file.filename):
-        return jsonify({"error": "Invalid file type"}), 400
+        return jsonify({"error": "Only PDF and TXT files allowed"}), 400
 
     try:
         text = extract_text(file, file.filename)
 
         if not text.strip():
-            return jsonify({"error": "Empty or unreadable file"}), 400
+            return jsonify({"error": "File is empty or unreadable"}), 400
 
         result = analyze_resume(text)
         return jsonify(result)
@@ -202,7 +210,7 @@ def analyze():
         return jsonify({"error": str(e)}), 500
 
 
-# 🚀 Render run
+# 🚀 Run (Render compatible)
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
