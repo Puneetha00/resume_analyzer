@@ -1,60 +1,32 @@
-document.getElementById('upload-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
+document.querySelector("form").addEventListener("submit", async function(e) {
+    e.preventDefault(); // 🚫 stops page reload
 
-    const fileInput = document.getElementById('resume-file');
+    const fileInput = document.querySelector('input[type="file"]');
     const file = fileInput.files[0];
 
-    const errorDiv = document.getElementById('error');
-    const resultsDiv = document.getElementById('results');
-
-    errorDiv.classList.add('hidden');
-    resultsDiv.classList.add('hidden');
-
     if (!file) {
-        errorDiv.textContent = "⚠️ Please select a file first!";
-        errorDiv.classList.remove('hidden');
+        alert("Please upload a file");
         return;
     }
 
-    // ✅ SHOW FILE NAME (fix disappearing issue)
-    document.getElementById('file-name').textContent = `📄 ${file.name}`;
-
     const formData = new FormData();
-    formData.append('resume', file);
-
-    const btn = document.getElementById('analyze-btn');
-    const loading = document.getElementById('loading');
-
-    loading.classList.remove('hidden');
-    btn.disabled = true;
-    btn.textContent = 'Processing...';
+    formData.append("resume", file);
 
     try {
-        const response = await fetch('https://resume-analyzer-nocb.onrender.com/analyze', {
-            method: 'POST',
+        const res = await fetch("https://resume-analyzer-nocb.onrender.com/analyze", {
+            method: "POST",
             body: formData
         });
 
-        let data;
-        try {
-            data = await response.json();
-        } catch {
-            throw new Error("Server error");
-        }
+        const data = await res.json();
 
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to analyze resume');
-        }
+        console.log(data); // 🔍 check in console first
 
-        displayResults(data);
-        resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        // 👉 DO NOT change UI here yet
+        // just confirm backend works
 
     } catch (err) {
-        errorDiv.textContent = `❌ ${err.message}`;
-        errorDiv.classList.remove('hidden');
-    } finally {
-        loading.classList.add('hidden');
-        btn.disabled = false;
-        btn.textContent = '🚀 Analyze Resume';
+        console.error(err);
+        alert("Error connecting to backend");
     }
 });
